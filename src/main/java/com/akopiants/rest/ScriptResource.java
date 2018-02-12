@@ -3,6 +3,8 @@ package com.akopiants.rest;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,9 +25,9 @@ public class ScriptResource {
 	private ScriptServiceImpl scriptService;
 
 	@PostMapping(path = "script")
-	public ResponseEntity<String> getScriptOutputNon_blocking(@RequestBody String script) throws InterruptedException, ExecutionException {
+	public ResponseEntity<String> getScriptOutputNon_blocking(@RequestBody String script) throws InterruptedException, ExecutionException, TimeoutException {
 		CompletableFuture<String> asyncResult = scriptService.callAsync(script);
-		String out = asyncResult.get();
+		String out = asyncResult.get(3, TimeUnit.SECONDS);
 		if (out.startsWith("-")) {
 			if (out.equals("-scriptException")) {
 				return new ResponseEntity<String>(out, HttpStatus.BAD_REQUEST);// out=='-scriptException'
